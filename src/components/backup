@@ -1,0 +1,135 @@
+import React from "react";
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import Form from "react-bootstrap/Form";
+import InputGroup from "react-bootstrap/InputGroup";
+import FormControl from "react-bootstrap/FormControl";
+import Button from "react-bootstrap/Button";
+//import axios from 'axios';
+import { ListGroup } from "react-bootstrap";
+
+const Shoppies = () => {
+
+    const [query, setQuery] = React.useState('');
+    const [movies, setMovies] = React.useState([]);
+    const focusSearch = React.useRef(null);
+
+    React.useEffect(() => {
+        focusSearch.current.focus()}, []);
+
+    React.useEffect(() => {
+        let currentQuery = true;
+        const controller = new AbortController();
+
+        const loadMovie = async () => {
+            if(!query) return setMovies([]);
+            await sleep(350);
+            if (currentQuery) {
+                const movie = await getMovie(query, controller);
+                setMovies(movie);
+            }
+            return () => {
+                currentQuery = false;
+                controller.abort();
+            }
+        }
+        loadMovie();
+    },[query]);
+
+    const sleep = (ms) => {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    const getMovie = async (query) => {
+        const results = await fetch(`http://www.omdbapi.com/?i=tt3896198&apikey=abaaeb92&t=${query}`, {
+            headers: {'accept': 'application/json'}
+        })
+        const movieData = await results.json();
+        return movieData.results;
+    }
+
+    let movieComponents = movies.map((movie, index) => {
+        return <ListGroup.Item key={index} action variant="secondary">{movie.movie}</ListGroup.Item>;
+      })
+
+  return (
+    <Container
+      className="sticky-top"
+      
+      fluid
+    >
+      <Row style={{ backgroundColor: "#2A9D8F" }}>
+        <Col xs={2} md={1} className="align-self-end">
+        </Col>
+
+        <Col xs={2} md={2} className="align-self-end">
+
+            <span
+              style={{
+                fontSize: "50px",
+                fontFamily: "Open Sans",
+                color: "white",
+                WebkitTextStroke: "1px F8F8F8",
+                textShadow: "0px 1px 4px #23430C"
+              }}
+            >The Shoppies</span>
+
+        </Col>
+        <Col md={8} className="align-self-center mt-2">
+
+          <Form>
+            <Form.Row className="align-items-center">
+              <Col lg="8" className="m-auto">
+
+                <InputGroup className="mb-2">
+
+                  <FormControl
+                    placeholder="Enter a Movie Title"
+                    pattern="^[A-Za-z0-9']*$"
+                    ref={focusSearch}
+                    onChange={(e => setQuery(e.target.value))}
+                    value={query}
+                  />
+
+                  <InputGroup.Append>
+                    <Button
+                      variant="outline-secondary bg-light"
+                      type="submit"
+                      
+                      
+                    >
+                      Search
+                  </Button>
+                  </InputGroup.Append>
+                </InputGroup>
+              </Col>
+            </Form.Row>
+          </Form>
+        </Col>
+        
+      </Row>
+          <Container >
+          <Row>
+        <Col md={6} className="p-3 mt-5">
+            <h3>Search Results</h3>
+          <Container className="p-5 border" fluid>
+          <ListGroup>{movieComponents}</ListGroup>
+          </Container>
+        </Col>
+
+        <Col md={6} className="p-3 mt-5">
+          <h3>Nominations</h3>
+          <Container className="p-5 border" fluid>
+            <Row>
+
+            </Row>
+          </Container>
+        </Col>
+      </Row>
+          </Container>
+    </Container>
+  );
+};
+
+export default Shoppies;
